@@ -1,34 +1,66 @@
+// TODO:
+// - Aliasing of some kind.
+// - Panning when space is pressed.
+// - Resizing with the screen.
+// - Undo (⌘+Z) and redo (⇧+⌘+Z).
+// - Optimize mesh (at least skip overlapping points).
+// - Ability to download the whole canvas as an image (find out a bounding box
+//   rectangle and preferably generate PNG out of that
+//   https://stackoverflow.com/questions/42932645/creating-and-saving-to-file-new-png-image-in-javascript).
+// - Creating another mesh when one is full.
+
 import React from "react";
 import * as THREE from "three";
 
-// three.js animataed line using BufferGeometry
+type Point = number[];
 
-const MAX_POINTS = 500;
-let drawCount = 0;
+const scale = ([x, y]: Point, factor: number): Point => {
+  const norm = Math.sqrt(x * x + y * y);
+  return [(x / norm) * factor, (y / norm) * factor];
+};
 
-const info = document.createElement("div");
-info.style.position = "absolute";
-info.style.top = "30px";
-info.style.width = "100%";
-info.style.textAlign = "center";
-info.style.color = "#fff";
-info.style.fontWeight = "bold";
-info.style.backgroundColor = "transparent";
-info.style.zIndex = "1";
-info.style.fontFamily = "Monospace";
-info.innerHTML = "three.js animataed line using BufferGeometry";
-document.body.appendChild(info);
+const add = (p1: Point, p2: Point): Point => [p1[0] + p2[0], p1[1] + p2[1]];
+
+const normal = (points: Array<Point>, width: number) => {
+  width /= 2;
+  const triangles = [];
+  for (let i = 0; i < points.length - 1; i++) {
+    const dx = points[i + 1][0] - points[i][0];
+    const dy = points[i + 1][1] - points[i][1];
+    const n1 = scale([dy, -dx], width);
+    const n2 = scale([-dy, dx], width);
+
+    triangles.push(
+      ...add(points[i + 1], n2),
+      0,
+      ...add(points[i], n1),
+      0,
+      ...add(points[i], n2),
+      0,
+      ...add(points[i], n1),
+      0,
+      ...add(points[i + 1], n2),
+      0,
+      ...add(points[i + 1], n1),
+      0
+    );
+  }
+  return triangles;
+};
+
+const MAX_POINTS = 10000;
 
 const size = 600;
 
 const renderer = new THREE.WebGLRenderer();
 renderer.setPixelRatio(window.devicePixelRatio);
 renderer.setSize(size, size);
+renderer.setClearColor(0xffffff, 1);
 document.body.appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
 
-const camera = new THREE.OrthographicCamera(0, size, 0, size, 1, 10000);
+const camera = new THREE.OrthographicCamera(0, size, 0, size, -1, 10000);
 camera.position.set(0, 0, 1000);
 
 const geometry = new THREE.BufferGeometry();
@@ -36,43 +68,29 @@ const geometry = new THREE.BufferGeometry();
 const positions = new Float32Array(MAX_POINTS * 3); // 3 vertices per point
 geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
 
-// drawcalls
-drawCount = 2; // draw the first 2 points, only
-geometry.setDrawRange(0, drawCount);
-
 const material = new THREE.LineBasicMaterial({ color: 0xff0000, linewidth: 2 });
 
 const line = new THREE.Line(geometry, material);
 scene.add(line);
 
-let x = 0,
-  y = 0,
-  z = 0,
-  index = 0;
+const meshMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
+const meshGeometry = new THREE.BufferGeometry();
+const meshPositions = new Float32Array(MAX_POINTS * 3);
 
-// // update positions
-// updatePositions();
+meshGeometry.setAttribute(
+  "position",
+  new THREE.BufferAttribute(meshPositions, 3)
+);
+const mesh = new THREE.Mesh(meshGeometry, meshMaterial);
 
-// function updatePositions() {
-//   const positions = line.geometry.attributes.position.array as number[];
+scene.add(mesh);
 
-//   for (var i = 0, l = MAX_POINTS; i < l; i++) {
-//     positions[index++] = x;
-//     positions[index++] = y;
-//     positions[index++] = z;
+let index = 0;
 
-//     x += (Math.random() - 0.5) * 30;
-//     y += (Math.random() - 0.5) * 30;
-//     z += (Math.random() - 0.5) * 30;
-//   }
-// }
-
-// render
 function render() {
   renderer.render(scene, camera);
 }
 
-// animate
 function animate() {
   requestAnimationFrame(animate);
 
@@ -80,11 +98,11 @@ function animate() {
 }
 
 let penDown = false;
-let moving = false;
+let previous: number[] | null = null;
 
 const handleMouseUp = () => {
   penDown = false;
-  moving = false;
+  previous = null;
 };
 
 const handleMouseDown = () => {
@@ -99,21 +117,20 @@ const handleMouseMove = (event: MouseEvent) => {
   const x = event.offsetX;
   const y = event.offsetY;
 
-  if (index === 0) {
-    line.geometry.attributes.position.needsUpdate = true;
-  }
-
-  if (!moving) {
-    moving = true;
+  if (previous === null) {
+    previous = [x, y];
   } else {
-    const positions = line.geometry.attributes.position.array as number[];
+    const positions = mesh.geometry.attributes.position.array as number[];
+    const current = [x, y];
+    const line = normal([previous, current], 1);
+    previous = current;
+    for (let i = 0; i < line.length; i++) {
+      positions[index] = line[i] || 0;
+      index += 1;
+    }
 
-    positions[index] = x;
-    positions[index + 1] = y;
-    positions[index + 2] = 0;
-    index += 3;
-    line.geometry.setDrawRange(0, (index / 3) % MAX_POINTS);
-    line.geometry.attributes.position.needsUpdate = true;
+    mesh.geometry.setDrawRange(0, (index / 3) % MAX_POINTS);
+    mesh.geometry.attributes.position.needsUpdate = true;
     render();
   }
 };
