@@ -63,16 +63,6 @@ const scene = new THREE.Scene();
 const camera = new THREE.OrthographicCamera(0, size, 0, size, -1, 10000);
 camera.position.set(0, 0, 1000);
 
-const geometry = new THREE.BufferGeometry();
-
-const positions = new Float32Array(MAX_POINTS * 3); // 3 vertices per point
-geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
-
-const material = new THREE.LineBasicMaterial({ color: 0xff0000, linewidth: 2 });
-
-const line = new THREE.Line(geometry, material);
-scene.add(line);
-
 const meshMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
 const meshGeometry = new THREE.BufferGeometry();
 const meshPositions = new Float32Array(MAX_POINTS * 3);
@@ -122,7 +112,7 @@ const handleMouseMove = (event: MouseEvent) => {
   } else {
     const positions = mesh.geometry.attributes.position.array as number[];
     const current = [x, y];
-    const line = normal([previous, current], 1);
+    const line = normal([previous, current], 1.5);
     previous = current;
     for (let i = 0; i < line.length; i++) {
       positions[index] = line[i] || 0;
