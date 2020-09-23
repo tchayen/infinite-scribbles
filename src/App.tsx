@@ -1,6 +1,8 @@
 // TODO:
-// - Aliasing of some kind.
-// - Panning when space is pressed.
+// + Aliasing of some kind (done for now, maybe
+//   https://blog.mapbox.com/drawing-antialiased-lines-with-opengl-8766f34192dc
+//   in the future).
+// + Panning when space is pressed.
 // - Resizing with the screen.
 // - Undo (⌘+Z) and redo (⇧+⌘+Z).
 // - Optimize mesh (at least skip overlapping points).
@@ -50,18 +52,23 @@ const normal = (points: Array<Point>, width: number) => {
 
 const MAX_POINTS = 10000;
 
-const size = 600;
+const WIDTH = window.innerWidth * 2;
+const HEIGHT = window.innerHeight * 2;
 
 const renderer = new THREE.WebGLRenderer();
 renderer.setPixelRatio(window.devicePixelRatio);
-renderer.setSize(size, size);
+renderer.setSize(WIDTH, HEIGHT);
+renderer.domElement.setAttribute(
+  "style",
+  `width: ${WIDTH / 2}px; height: ${HEIGHT / 2}px`
+);
 renderer.setClearColor(0xffffff, 1);
 document.body.appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
 
-const camera = new THREE.OrthographicCamera(0, size, 0, size, -1, 10000);
-camera.position.set(0, 0, 1000);
+const camera = new THREE.OrthographicCamera(0, WIDTH, 0, HEIGHT, 0, 1);
+camera.position.set(0, 0, 1);
 
 const meshMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
 const meshGeometry = new THREE.BufferGeometry();
@@ -72,6 +79,7 @@ meshGeometry.setAttribute(
   new THREE.BufferAttribute(meshPositions, 3)
 );
 const mesh = new THREE.Mesh(meshGeometry, meshMaterial);
+mesh.frustumCulled = false;
 
 scene.add(mesh);
 
@@ -89,6 +97,24 @@ function animate() {
 
 let penDown = false;
 let previous: number[] | null = null;
+let holdingSpace = false;
+let mousePosition: { x: number; y: number } | null = null;
+let offset: { x: number; y: number } = { x: 0, y: 0 };
+
+const handleKeyDown = (event: KeyboardEvent) => {
+  if (event.key === " ") {
+    holdingSpace = true;
+    document.body.style.cursor = "move";
+  }
+};
+
+const handleKeyUp = (event: KeyboardEvent) => {
+  if (event.key === " ") {
+    holdingSpace = false;
+    mousePosition = null;
+    document.body.style.cursor = "default";
+  }
+};
 
 const handleMouseUp = () => {
   penDown = false;
@@ -100,12 +126,35 @@ const handleMouseDown = () => {
 };
 
 const handleMouseMove = (event: MouseEvent) => {
+  if (holdingSpace && penDown) {
+    if (mousePosition === null) {
+      mousePosition = { x: event.offsetX, y: event.offsetY };
+    }
+    const deltaX = mousePosition.x - event.offsetX;
+    const deltaY = mousePosition.y - event.offsetY;
+
+    camera.translateX(deltaX);
+    camera.translateY(deltaY);
+
+    offset.x += deltaX;
+    offset.y += deltaY;
+
+    mousePosition = {
+      x: mousePosition.x - deltaX,
+      y: mousePosition.y - deltaY,
+    };
+
+    console.log(offset, mousePosition, { deltaX, deltaY });
+
+    return;
+  }
+
   if (!penDown) {
     return;
   }
 
-  const x = event.offsetX;
-  const y = event.offsetY;
+  const x = event.offsetX * 2 + offset.x;
+  const y = event.offsetY * 2 + offset.y;
 
   if (previous === null) {
     previous = [x, y];
@@ -119,18 +168,24 @@ const handleMouseMove = (event: MouseEvent) => {
       index += 1;
     }
 
-    mesh.geometry.setDrawRange(0, (index / 3) % MAX_POINTS);
+    mesh.geometry.setDrawRange(0, index / 3);
     mesh.geometry.attributes.position.needsUpdate = true;
     render();
+
+    if ((index / 3) % MAX_POINTS === 0) {
+      index = 0;
+    }
   }
 };
 
-renderer.domElement.addEventListener("mousemove", handleMouseMove, false);
+window.addEventListener("mousemove", handleMouseMove, false);
 renderer.domElement.addEventListener("mousedown", handleMouseDown, false);
 renderer.domElement.addEventListener("mouseup", handleMouseUp, false);
+window.addEventListener("keyup", handleKeyUp, false);
+window.addEventListener("keydown", handleKeyDown, false);
 
 animate();
 
-const App = () => <div>hej</div>;
+const App = () => <div></div>;
 
 export default App;
