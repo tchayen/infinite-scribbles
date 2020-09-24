@@ -19,3 +19,60 @@ html,
 body {
   overflow: hidden;
 }
+
+ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+li {
+  color: #888;
+  margin-bottom: 12px;
+}
+
+li::before {
+  content: "·";
+  margin-right: 16px;
+}
+
+strong {
+  font-weight: 600;
+  color: #000;
+}
+
+a {
+  text-decoration: none;
+  border-bottom: 1px solid rgba(0, 122, 255, 0.3);
+  box-shadow: 0px -8px 0px rgba(0, 122, 255, 0.3) inset;
+}
+
+a:visited {
+  color: #000;
+}
+
+a:focus {
+  outline: none;
+  border-radius: 10px;
+  box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.3);
+}
+
+h2 {
+  margin: 0;
+  font-size: 32px;
+  font-weight: 400;
+  margin-bottom: 24px;
+}
+
+button {
+  background-color: #007aff;
+}
+
+button:focus {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.3);
+}
+
+button:active {
+  background-color: #006df2;
+}

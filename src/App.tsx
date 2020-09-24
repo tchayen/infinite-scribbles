@@ -10,10 +10,12 @@
 //   rectangle and preferably generate PNG out of that
 //   https://stackoverflow.com/questions/42932645/creating-and-saving-to-file-new-png-image-in-javascript).
 // - Creating another mesh when one is full.
+// - If distance to previous point is huge, sample several points from a bezier curve.
 
 import React from "react";
 import * as THREE from "three";
 import DownloadButton from "./components/DownloadButton";
+import Popup from "./components/Popup";
 import { normal } from "./maths/vectors";
 
 const MAX_POINTS = 10000;
@@ -122,6 +124,12 @@ const handleMouseUp = () => {
 
   history = [...history.slice(0, historyIndex + 1), index];
   historyIndex += 1;
+
+  if (!window.onbeforeunload) {
+    window.onbeforeunload = () => {
+      return "Changed made might be unsaved.";
+    };
+  }
 
   shapes = [...shapes.slice(0, historyIndex + 1), accumulatingShape];
   accumulatingShape = [];
@@ -248,7 +256,16 @@ const getSvg = () => {
   const width = (mostRight - mostLeft) / ZOOM;
   const height = (mostBottom - mostTop) / ZOOM;
 
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" fill="transparent" stroke="black">${paths}</svg>`;
+  return `
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="${width}"
+  height="${height}"
+  fill="transparent"
+  stroke="black"
+  stroke-width="2">
+    ${paths}
+</svg>`;
 };
 
 window.addEventListener("mousemove", handleMouseMove, false);
@@ -263,6 +280,7 @@ render();
 const App = () => (
   <div>
     <DownloadButton getSvg={getSvg} />
+    <Popup />
     {/* <div
       style={{
         width: "100vw",
