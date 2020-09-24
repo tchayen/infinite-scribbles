@@ -11,6 +11,7 @@
 //   https://stackoverflow.com/questions/42932645/creating-and-saving-to-file-new-png-image-in-javascript).
 // - Creating another mesh when one is full.
 // - If distance to previous point is huge, sample several points from a bezier curve.
+// - Eraser.
 
 import React from "react";
 import * as THREE from "three";
@@ -160,6 +161,8 @@ const handleMouseMove = (event: MouseEvent) => {
       x: mousePosition.x - deltaX,
       y: mousePosition.y - deltaY,
     };
+
+    render();
 
     return;
   }
