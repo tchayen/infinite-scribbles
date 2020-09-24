@@ -9,9 +9,12 @@
 // + Ability to download the whole canvas as an image (find out a bounding box
 //   rectangle and preferably generate PNG out of that
 //   https://stackoverflow.com/questions/42932645/creating-and-saving-to-file-new-png-image-in-javascript).
+// - Prevent window from reloading.
 // - Creating another mesh when one is full.
 // - If distance to previous point is huge, sample several points from a bezier curve.
+// - Custom cursor for pen and eraser and moving.
 // - Eraser.
+// - Ability to place point in place with no moving.
 
 import React from "react";
 import * as THREE from "three";
@@ -127,8 +130,11 @@ const handleMouseUp = () => {
   historyIndex += 1;
 
   if (!window.onbeforeunload) {
-    window.onbeforeunload = () => {
-      return "Changed made might be unsaved.";
+    window.onbeforeunload = (event: BeforeUnloadEvent) => {
+      if (shapes.length > 0) {
+        // Prevent unload only if there is some user-created content.
+        event.returnValue = "Test";
+      }
     };
   }
 
