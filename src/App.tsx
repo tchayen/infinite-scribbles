@@ -9,7 +9,7 @@
 // + Ability to download the whole canvas as an image (find out a bounding box
 //   rectangle and preferably generate PNG out of that
 //   https://stackoverflow.com/questions/42932645/creating-and-saving-to-file-new-png-image-in-javascript).
-// - Prevent window from reloading.
+// + Prevent window from reloading.
 // - Creating another mesh when one is full.
 // - If distance to previous point is huge, sample several points from a bezier curve.
 // - Custom cursor for pen and eraser and moving.
@@ -20,35 +20,12 @@ import React from "react";
 import * as THREE from "three";
 import DownloadButton from "./components/DownloadButton";
 import Popup from "./components/Popup";
-import { normal } from "./maths/vectors";
+import { normal, Point } from "./vectors";
+import { MAX_POINTS } from "./consts";
+import { renderer, scene, camera, material } from "./three";
 
-const MAX_POINTS = 10000;
-
-const renderer = new THREE.WebGLRenderer();
-renderer.setPixelRatio(window.devicePixelRatio);
-renderer.setSize(window.innerWidth * 2, window.innerHeight * 2);
-renderer.domElement.setAttribute(
-  "style",
-  `width: ${(window.innerWidth * 2) / 2}px; height: ${
-    (window.innerHeight * 2) / 2
-  }px`
-);
-renderer.setClearColor(0xffffff, 1);
 document.body.appendChild(renderer.domElement);
 
-const scene = new THREE.Scene();
-
-const camera = new THREE.OrthographicCamera(
-  0,
-  window.innerWidth * 2,
-  0,
-  window.innerHeight * 2,
-  0,
-  1
-);
-camera.position.set(0, 0, 1);
-
-const meshMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
 const meshGeometry = new THREE.BufferGeometry();
 const meshPositions = new Float32Array(MAX_POINTS * 3);
 
@@ -56,7 +33,7 @@ meshGeometry.setAttribute(
   "position",
   new THREE.BufferAttribute(meshPositions, 3)
 );
-const mesh = new THREE.Mesh(meshGeometry, meshMaterial);
+const mesh = new THREE.Mesh(meshGeometry, material);
 mesh.frustumCulled = false;
 
 scene.add(mesh);
@@ -71,20 +48,24 @@ const updateRangeAndRedraw = () => {
   mesh.geometry.setDrawRange(0, index / 3);
   mesh.geometry.attributes.position.needsUpdate = true;
   render();
+
+  if ((index / 3) % MAX_POINTS === 0) {
+    index = 0;
+  }
 };
 
 let penDown = false;
 let holdingSpace = false;
 
-let previous: number[] | null = null;
+let previous: Point | null = null;
 let mousePosition: { x: number; y: number } | null = null;
 let offset: { x: number; y: number } = { x: 0, y: 0 };
 
 let history: number[] = [];
 let historyIndex = -1;
 
-let shapes: number[][][] = [];
-let accumulatingShape: number[][] = [];
+let shapes: Point[][] = [];
+let accumulatingShape: Point[] = [];
 
 const handleKeyDown = (event: KeyboardEvent) => {
   if (event.key === " ") {
@@ -96,14 +77,12 @@ const handleKeyDown = (event: KeyboardEvent) => {
       if (historyIndex !== history.length - 1) {
         historyIndex += 1;
         index = history[historyIndex];
-
         updateRangeAndRedraw();
       }
     } else {
       if (historyIndex >= 0) {
         historyIndex -= 1;
         index = history[historyIndex] || 0;
-
         updateRangeAndRedraw();
       }
     }
@@ -184,9 +163,10 @@ const handleMouseMove = (event: MouseEvent) => {
     previous = [x, y];
   } else {
     const positions = mesh.geometry.attributes.position.array as number[];
-    const current = [x, y];
+    const current: Point = [x, y];
 
     // Skip new point if it is closer than 2 pixels in euclidean metric.
+    // TODO: implement some more effective filters here.
     if ((current[0] - previous[0]) ** 2 + (current[1] - previous[1]) ** 2 < 4) {
       return;
     }
@@ -201,10 +181,6 @@ const handleMouseMove = (event: MouseEvent) => {
     }
 
     updateRangeAndRedraw();
-
-    if ((index / 3) % MAX_POINTS === 0) {
-      index = 0;
-    }
   }
 };
 
@@ -290,19 +266,6 @@ const App = () => (
   <div>
     <DownloadButton getSvg={getSvg} />
     <Popup />
-    {/* <div
-      style={{
-        width: "100vw",
-        height: 60,
-        backgroundColor: "#E5E5E5",
-        position: "absolute",
-        top: 0,
-        left: 0,
-        display: "flex",
-        justifyContent: "flex-end",
-      }}
-    >
-    </div> */}
   </div>
 );
 
