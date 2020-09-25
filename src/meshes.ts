@@ -10,9 +10,17 @@ import {
 import { material, scene } from "./three";
 import { Point } from "./vectors";
 
+// TODO:
+// - Play with the code to extract THREE parts so that they can be mocked and
+//   unit tests can be done.
+// - Write unit tests for appending lines.
+// - Maybe it will help with 2.
+// - Move on to unit tests for undo & redo.
+// - At this stage 1. should be gone.
+
 // BUGS:
-// - CMD+Z doesn't cross buffers right now.
-// - There is one line missing in a shape spanning two (or more) buffers.
+// 1. CMD+Z doesn't cross buffers right now.
+// 2. There is one line missing in a shape spanning two (or more) buffers.
 
 let index = 0; // At which index the next line can be added.
 let history: number[] = [];
@@ -31,11 +39,10 @@ const updateRange = (targetIndex: number, meshIndex: number) => {
 };
 
 const addMesh = () => {
-  const geometry = new THREE.BufferGeometry();
   const positions = new Float32Array(
     LINES_IN_BUFFER * TRIANGLES_IN_LINE * POINTS_IN_TRIANGLE * VALUES_IN_POINT
   );
-
+  const geometry = new THREE.BufferGeometry();
   geometry.setAttribute(
     "position",
     new THREE.BufferAttribute(positions, VALUES_IN_POINT)
