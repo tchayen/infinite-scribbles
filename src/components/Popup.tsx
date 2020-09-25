@@ -1,8 +1,27 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { DEV } from "../consts";
 import Button from "./Button";
 
 const Popup = () => {
-  const [show, setShow] = useState(true);
+  const [show, setShow] = useState(!DEV);
+
+  const handleKeyUp = (event: KeyboardEvent) => {
+    if (event.key === " ") {
+      setShow(false);
+    }
+
+    if (event.key === "Escape") {
+      setShow(true);
+    }
+  };
+
+  useEffect(() => {
+    window.addEventListener("keyup", handleKeyUp, false);
+
+    return () => {
+      window.removeEventListener("keyup", handleKeyUp, false);
+    };
+  }, []);
 
   if (!show) {
     return null;
@@ -41,9 +60,12 @@ const Popup = () => {
             Hold <strong>space</strong> to drag and move.
           </li>
           <li>Download your note as SVG in the top right corner.</li>
-          {/* <li>
+          <li>
             Press <strong>escape</strong> to see this window.
-          </li> */}
+          </li>
+          <li>
+            You can also close this window using <strong>space</strong>.
+          </li>
           {/* <li>Change color and brush size in the panel at the top.</li> */}
           <li>
             Contact me{" "}
