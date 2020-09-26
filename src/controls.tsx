@@ -75,8 +75,8 @@ const handleMouseMove = (event: MouseEvent) => {
       return;
     }
 
-    const x = event.offsetX * 2 + offset.x;
-    const y = event.offsetY * 2 + offset.y;
+    const x = (event.offsetX + offset.x) * ZOOM;
+    const y = (event.offsetY + offset.y) * ZOOM;
 
     if (previous === null) {
       previous = [x, y];
