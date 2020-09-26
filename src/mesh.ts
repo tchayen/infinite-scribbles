@@ -31,7 +31,7 @@ const create = () => {
 const update = (mesh: Mesh, index: number) => {
   mesh.object.geometry.setDrawRange(
     0,
-    index * POINTS_IN_TRIANGLE * TRIANGLES_IN_LINE
+    (index % LINES_IN_BUFFER) * POINTS_IN_TRIANGLE * TRIANGLES_IN_LINE
   );
 
   mesh.object.geometry.attributes.position.needsUpdate = true;

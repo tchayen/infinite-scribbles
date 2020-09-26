@@ -1,7 +1,6 @@
 import { DEV, LINES_IN_BUFFER, ZOOM } from "./consts";
-import { Mesh } from "./mesh";
 import { Point } from "./vectors";
-import mesh from "./mesh";
+import mesh, { Mesh } from "./mesh";
 
 // TODO:
 // - Play with the code to extract THREE parts so that they can be mocked and
@@ -85,6 +84,7 @@ export const append = (numbers: number[], a: Point, b: Point) => {
     meshes.push({ object: mesh.create() });
   }
 
+  console.log(`Updating ${current} to ${index}`);
   mesh.update(meshes[current], index);
   index += 1;
 };
