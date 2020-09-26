@@ -1,15 +1,20 @@
-import { append, undo, __TEST_ONLY__ } from "../meshes";
+import * as geometry from "../geometry";
+jest.mock("../consts");
+jest.mock("../mesh");
 
 describe("meshes", () => {
+  beforeAll(() => {
+    geometry.setup();
+  });
+
   it("is properly set up", () => {
     // TODO
   });
 
   it("increment index", () => {
-    console.log(__TEST_ONLY__);
-    append([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], [30, 30], [100, 100]);
-    console.log(__TEST_ONLY__);
-    // TODO
+    expect(geometry.__TEST_ONLY__.index).toBe(0);
+    geometry.append([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], [30, 30], [100, 100]);
+    expect(geometry.__TEST_ONLY__.index).toBe(1);
   });
 
   it("move to the next mesh once current is full", () => {
@@ -28,7 +33,11 @@ describe("meshes", () => {
     // TODO
   });
 
-  it("", () => {
+  it("exported shape contains all lines", () => {
+    // TODO
+  });
+
+  xit("", () => {
     // TODO
   });
 });

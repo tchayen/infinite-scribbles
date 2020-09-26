@@ -1,14 +1,7 @@
-import * as THREE from "three";
-import {
-  DEV,
-  LINES_IN_BUFFER,
-  POINTS_IN_TRIANGLE,
-  TRIANGLES_IN_LINE,
-  VALUES_IN_POINT,
-  ZOOM,
-} from "./consts";
-import { material, scene } from "./three";
+import { DEV, LINES_IN_BUFFER, ZOOM } from "./consts";
+import { Mesh } from "./mesh";
 import { Point } from "./vectors";
+import mesh from "./mesh";
 
 // TODO:
 // - Play with the code to extract THREE parts so that they can be mocked and
@@ -25,34 +18,9 @@ import { Point } from "./vectors";
 let index = 0; // At which index the next line can be added.
 let history: number[] = [];
 let historyIndex = -1;
-let meshes: THREE.Mesh<THREE.BufferGeometry>[] = [];
+let meshes: Mesh[] = [];
 let shapes: Point[][] = [];
 let accumulatingShape: Point[] = [];
-
-const updateRange = (targetIndex: number, meshIndex: number) => {
-  meshes[meshIndex].geometry.setDrawRange(
-    0,
-    targetIndex * POINTS_IN_TRIANGLE * TRIANGLES_IN_LINE
-  );
-
-  meshes[meshIndex].geometry.attributes.position.needsUpdate = true;
-};
-
-const addMesh = () => {
-  const positions = new Float32Array(
-    LINES_IN_BUFFER * TRIANGLES_IN_LINE * POINTS_IN_TRIANGLE * VALUES_IN_POINT
-  );
-  const geometry = new THREE.BufferGeometry();
-  geometry.setAttribute(
-    "position",
-    new THREE.BufferAttribute(positions, VALUES_IN_POINT)
-  );
-  const mesh = new THREE.Mesh(geometry, material);
-  mesh.frustumCulled = false;
-
-  meshes.push(mesh);
-  scene.add(mesh);
-};
 
 export const undo = () => {
   if (historyIndex >= 0) {
@@ -61,9 +29,9 @@ export const undo = () => {
     index = history[historyIndex] || 0;
     const current = Math.floor(index / LINES_IN_BUFFER);
     for (let i = previous; i > current; i--) {
-      updateRange(0, i);
+      mesh.update(meshes[i], 0);
     }
-    updateRange(index, current);
+    mesh.update(meshes[current], index);
   }
 };
 
@@ -74,9 +42,9 @@ export const redo = () => {
     index = history[historyIndex];
     const next = Math.floor(index / LINES_IN_BUFFER);
     for (let i = current; i < next; i++) {
-      updateRange(LINES_IN_BUFFER - 1, i);
+      mesh.update(meshes[i], LINES_IN_BUFFER - 1);
     }
-    updateRange(index, next);
+    mesh.update(meshes[next], index);
   }
 };
 
@@ -111,23 +79,13 @@ export const append = (numbers: number[], a: Point, b: Point) => {
 
   accumulatingShape.push(b);
 
-  const positions = meshes[current].geometry.attributes.position
-    .array as number[];
-
-  for (let i = 0; i < numbers.length; i++) {
-    positions[
-      (index % LINES_IN_BUFFER) *
-        VALUES_IN_POINT *
-        POINTS_IN_TRIANGLE *
-        TRIANGLES_IN_LINE +
-        i
-    ] = numbers[i];
-  }
+  mesh.appendValues(meshes[current], index, numbers);
 
   if (index % LINES_IN_BUFFER === LINES_IN_BUFFER - 1) {
-    addMesh();
+    meshes.push({ object: mesh.create() });
   }
-  updateRange(index, current);
+
+  mesh.update(meshes[current], index);
   index += 1;
 };
 
@@ -190,14 +148,18 @@ export const getSvg = () => {
 };
 
 export const setup = () => {
-  addMesh();
+  meshes.push({ object: mesh.create() });
 };
 
 export const __TEST_ONLY__ = {
   meshes,
-  index,
+  get index() {
+    return index;
+  },
   history,
-  historyIndex,
+  get historyIndex() {
+    return historyIndex;
+  },
   shapes,
   accumulatingShape,
 };

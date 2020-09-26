@@ -22,17 +22,17 @@ import React from "react";
 import DownloadButton from "./components/DownloadButton";
 import Popup from "./components/Popup";
 import * as three from "./three";
-import * as meshes from "./meshes";
+import * as geometry from "./geometry";
 import * as controls from "./controls";
 
 three.setup();
 controls.setup();
-meshes.setup();
+geometry.setup();
 three.render();
 
 const App = () => (
   <div>
-    <DownloadButton getSvg={meshes.getSvg} />
+    <DownloadButton getSvg={geometry.getSvg} />
     <Popup />
   </div>
 );

@@ -1,6 +1,6 @@
 import { renderer, render, camera } from "./three";
 import { getLine, Point } from "./vectors";
-import * as meshes from "./meshes";
+import * as geometry from "./geometry";
 
 let penDown = false;
 let holdingSpace = false;
@@ -15,9 +15,9 @@ const handleKeyDown = (event: KeyboardEvent) => {
     document.body.style.cursor = "move";
   } else if (event.key === "z" && (event.ctrlKey || event.metaKey)) {
     if (event.shiftKey) {
-      meshes.redo();
+      geometry.redo();
     } else {
-      meshes.undo();
+      geometry.undo();
     }
     render();
   }
@@ -35,7 +35,7 @@ const handleMouseUp = () => {
   penDown = false;
   previous = null;
 
-  meshes.mouseUp();
+  geometry.mouseUp();
 
   mousePosition = null;
 };
@@ -88,7 +88,7 @@ const handleMouseMove = (event: MouseEvent) => {
 
     const line = getLine(previous, current, 4);
     previous = current;
-    meshes.append(line, previous, current);
+    geometry.append(line, previous, current);
     render();
   }
 };
