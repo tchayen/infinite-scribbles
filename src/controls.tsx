@@ -37,10 +37,13 @@ const handleKeyUp = (event: KeyboardEvent) => {
 const handleMouseUp = () => {
   penDown = false;
   previous = null;
-
-  geometry.mouseUp();
-
   mousePosition = null;
+
+  if (mode === "drawing") {
+    geometry.mouseUp();
+  } else if (mode === "erasing") {
+    // Remove erased shape.
+  }
 };
 
 const handleMouseDown = (event: MouseEvent) => {
@@ -98,6 +101,15 @@ const handleMouseMove = (event: MouseEvent) => {
       geometry.append(line, previous, current);
       render();
     }
+  } else if (mode === "erasing") {
+    // TODO erasing:
+    // - Find edges that were crossed.
+    // - Copy them to a separate pink material buffer.
+    // - Zero them in original places.
+    // - When mouse goes up, clear the pink buffer.
+    //
+    // Future:
+    // - Detect emmpty buffers and get rid of them.
   }
 };
 
