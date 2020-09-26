@@ -19,8 +19,8 @@ const create = () => {
   };
 };
 
-const update = (mesh: FakeMesh, index: number) => {
-  mesh.object.range = index % LINES_IN_BUFFER;
+const update = (mesh: FakeMesh, count: number) => {
+  mesh.object.range = count;
 };
 
 const appendValues = (mesh: FakeMesh, index: number, values: number[]) => {

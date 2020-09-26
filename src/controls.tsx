@@ -1,9 +1,12 @@
 import { renderer, render, camera } from "./three";
 import { getLine, Point } from "./vectors";
 import * as geometry from "./geometry";
+import { ZOOM } from "./consts";
+
+type Mode = "drawing" | "erasing" | "panning";
+let mode: Mode = "drawing";
 
 let penDown = false;
-let holdingSpace = false;
 
 let previous: Point | null = null;
 let mousePosition: { x: number; y: number } | null = null;
@@ -11,7 +14,7 @@ let offset: { x: number; y: number } = { x: 0, y: 0 };
 
 const handleKeyDown = (event: KeyboardEvent) => {
   if (event.key === " ") {
-    holdingSpace = true;
+    mode = "panning";
     document.body.style.cursor = "move";
   } else if (event.key === "z" && (event.ctrlKey || event.metaKey)) {
     if (event.shiftKey) {
@@ -25,7 +28,7 @@ const handleKeyDown = (event: KeyboardEvent) => {
 
 const handleKeyUp = (event: KeyboardEvent) => {
   if (event.key === " ") {
-    holdingSpace = false;
+    mode = "drawing";
     mousePosition = null;
     document.body.style.cursor = "default";
   }
@@ -43,53 +46,58 @@ const handleMouseUp = () => {
 const handleMouseDown = (event: MouseEvent) => {
   penDown = true;
 
-  if (holdingSpace) {
+  if (mode === "panning") {
     mousePosition = { x: event.offsetX, y: event.offsetY };
   }
 };
 
 const handleMouseMove = (event: MouseEvent) => {
-  if (holdingSpace && penDown && mousePosition !== null) {
-    const deltaX = mousePosition.x - event.offsetX;
-    const deltaY = mousePosition.y - event.offsetY;
+  if (mode === "panning") {
+    if (penDown && mousePosition !== null) {
+      const deltaX = mousePosition.x - event.offsetX;
+      const deltaY = mousePosition.y - event.offsetY;
 
-    camera.translateX(deltaX);
-    camera.translateY(deltaY);
+      camera.translateX(deltaX * ZOOM);
+      camera.translateY(deltaY * ZOOM);
 
-    offset.x += deltaX;
-    offset.y += deltaY;
+      offset.x += deltaX;
+      offset.y += deltaY;
 
-    mousePosition = {
-      x: mousePosition.x - deltaX,
-      y: mousePosition.y - deltaY,
-    };
+      mousePosition = {
+        x: mousePosition.x - deltaX,
+        y: mousePosition.y - deltaY,
+      };
 
-    render();
-    return;
-  }
-
-  if (!penDown) {
-    return;
-  }
-
-  const x = event.offsetX * 2 + offset.x;
-  const y = event.offsetY * 2 + offset.y;
-
-  if (previous === null) {
-    previous = [x, y];
-  } else {
-    const current: Point = [x, y];
-
-    // Skip new point if it is closer than 2 pixels in euclidean metric.
-    // TODO: implement some more effective filters here.
-    if ((current[0] - previous[0]) ** 2 + (current[1] - previous[1]) ** 2 < 4) {
+      render();
+    }
+  } else if (mode === "drawing") {
+    if (!penDown) {
       return;
     }
 
-    const line = getLine(previous, current, 4);
-    previous = current;
-    geometry.append(line, previous, current);
-    render();
+    const x = event.offsetX * 2 + offset.x;
+    const y = event.offsetY * 2 + offset.y;
+
+    if (previous === null) {
+      previous = [x, y];
+    } else {
+      const current: Point = [x, y];
+
+      // TODO: implement some more effective filters here.
+
+      // Skip new point if it is closer than 2 pixels in euclidean metric.
+      if (
+        (current[0] - previous[0]) ** 2 + (current[1] - previous[1]) ** 2 <
+        4
+      ) {
+        return;
+      }
+
+      const line = getLine(previous, current, 4);
+      previous = current;
+      geometry.append(line, previous, current);
+      render();
+    }
   }
 };
 

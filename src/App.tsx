@@ -1,20 +1,6 @@
 // TODO:
-// + Aliasing of some kind (done for now, maybe
-//   https://blog.mapbox.com/drawing-antialiased-lines-with-opengl-8766f34192dc
-//   in the future).
-// + Panning when space is pressed.
-// + Resizing with the screen.
-// + Undo (⌘+Z) and redo (⇧+⌘+Z).
-// + Optimize mesh (at least skip overlapping points).
-// + Ability to download the whole canvas as an image (find out a bounding box
-//   rectangle and preferably generate PNG out of that
-//   https://stackoverflow.com/questions/42932645/creating-and-saving-to-file-new-png-image-in-javascript).
-// + Prevent window from reloading.
-// + Skip popup on space.
-// + Creating another mesh when one is full.
-// - Add padding to exported image so lines that are touching borders are not cut.
-// - If distance to previous point is huge, sample several points from a bezier curve.
-// - Custom cursor for pen and eraser and moving.
+// - Custom cursors for pen and eraser and moving.
+// - A way to download a PNG.
 // - Eraser.
 // - Ability to place point in place with no moving.
 

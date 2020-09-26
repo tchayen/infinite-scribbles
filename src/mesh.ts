@@ -28,10 +28,10 @@ const create = () => {
   return mesh;
 };
 
-const update = (mesh: Mesh, index: number) => {
+const update = (mesh: Mesh, count: number) => {
   mesh.object.geometry.setDrawRange(
     0,
-    (index % LINES_IN_BUFFER) * POINTS_IN_TRIANGLE * TRIANGLES_IN_LINE
+    count * POINTS_IN_TRIANGLE * TRIANGLES_IN_LINE
   );
 
   mesh.object.geometry.attributes.position.needsUpdate = true;

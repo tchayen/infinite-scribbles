@@ -2,18 +2,6 @@ import { DEV, LINES_IN_BUFFER, ZOOM } from "./consts";
 import { Point } from "./vectors";
 import mesh, { Mesh } from "./mesh";
 
-// TODO:
-// - Play with the code to extract THREE parts so that they can be mocked and
-//   unit tests can be done.
-// - Write unit tests for appending lines.
-// - Maybe it will help with 2.
-// - Move on to unit tests for undo & redo.
-// - At this stage 1. should be gone.
-
-// BUGS:
-// 1. CMD+Z doesn't cross buffers right now.
-// 2. There is one line missing in a shape spanning two (or more) buffers.
-
 let index = 0; // At which index the next line can be added.
 let history: number[] = [];
 let historyIndex = -1;
@@ -76,6 +64,9 @@ export const append = (numbers: number[], a: Point, b: Point) => {
     meshes.splice(current + 1, meshes.length - current);
   }
 
+  // TODO: `accumulatingShape` is missing the first point.
+  // TODO: If distance to previous point is huge, sample several points from a bezier curve.
+
   accumulatingShape.push(b);
 
   mesh.appendValues(meshes[current], index, numbers);
@@ -84,12 +75,22 @@ export const append = (numbers: number[], a: Point, b: Point) => {
     meshes.push({ object: mesh.create() });
   }
 
-  console.log(`Updating ${current} to ${index}`);
-  mesh.update(meshes[current], index);
+  mesh.update(meshes[current], (index % LINES_IN_BUFFER) + 1);
   index += 1;
 };
 
+export const clear = () => {
+  index = 0;
+  history = [];
+  historyIndex = 0;
+  meshes = [];
+  shapes = [];
+  accumulatingShape = [];
+};
+
 export const getSvg = () => {
+  // TODO: Add padding to exported image so lines that are touching borders are not cut.
+
   let mostLeft = Infinity;
   let mostRight = -Infinity;
   let mostTop = Infinity;
@@ -153,13 +154,13 @@ export const setup = () => {
 
 export const __TEST_ONLY__ = {
   meshes,
+  history,
+  shapes,
+  accumulatingShape,
   get index() {
     return index;
   },
-  history,
   get historyIndex() {
     return historyIndex;
   },
-  shapes,
-  accumulatingShape,
 };
