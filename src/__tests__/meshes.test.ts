@@ -114,23 +114,40 @@ describe("meshes", () => {
   });
 
   describe("exported shape", () => {
+    beforeEach(() => {
+      geometry.append(getLine(1), [0, 0], [10, 10]);
+      geometry.append(getLine(2), [10, 10], [10, 100]);
+      geometry.append(getLine(3), [10, 100], [100, 100]);
+      geometry.append(getLine(3), [100, 100], [100, 10]);
+      geometry.append(getLine(4), [100, 10], [10, 10]);
+      geometry.flush();
+
+      geometry.append(getLine(5), [0, 0], [110, 0]);
+      geometry.append(getLine(5), [110, 0], [100, 10]);
+      geometry.flush();
+    });
+
     it("contains all lines", () => {
-      // BUGS:
-      // - First line is lost in export.
-      // - Undo and redo don't work across buffers.
-      //
-      // TODO:
-      // - clear()
-      // - Add several lines.
-      // - Check.
+      expect(geometry.__TEST_ONLY__.shapes).toStrictEqual([
+        [
+          [0, 0],
+          [10, 10],
+          [10, 100],
+          [100, 100],
+          [100, 10],
+          [10, 10],
+        ],
+        [
+          [0, 0],
+          [110, 0],
+          [100, 10],
+        ],
+      ]);
     });
 
-    it("works for several buffers", () => {
-      // TODO
+    it("generates proper svg", () => {
+      const result = `<svg\n  xmlns="http://www.w3.org/2000/svg"\n  width="55"\n  height="50"\n  fill="transparent"\n  stroke="black"\n  stroke-width="2">\n    <path d="M 0 0 L 5 5 L 5 50 L 50 50 L 50 5 L 5 5" />\n    <path d="M 0 0 L 55 0 L 50 5" />\n</svg>`;
+      expect(geometry.getSvg()).toBe(result);
     });
-  });
-
-  xit("", () => {
-    // TODO
   });
 });

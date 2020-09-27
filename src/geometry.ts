@@ -61,6 +61,7 @@ export const append = (numbers: number[], a: Point, b: Point) => {
   // User started drawing something new so we prevent redoing previous shapes.
   if (historyIndex < history.length) {
     history = [...history.slice(0, historyIndex + 1)];
+    shapes = [...shapes.slice(0, historyIndex + 1)];
   }
 
   // This is the first line in the shape so `a` should be preserved.
@@ -74,7 +75,6 @@ export const append = (numbers: number[], a: Point, b: Point) => {
     meshes.splice(current + 1, meshes.length - current);
   }
 
-  // TODO: `accumulatingShape` is missing the first point.
   // TODO: If distance to previous point is huge, sample several points from a bezier curve.
 
   accumulatingShape.push(b);
@@ -105,8 +105,6 @@ export const getSvg = () => {
   let mostRight = -Infinity;
   let mostTop = Infinity;
   let mostBottom = -Infinity;
-
-  shapes = [...shapes.slice(0, historyIndex + 1)];
 
   for (const shape of shapes) {
     for (const point of shape) {
@@ -141,13 +139,12 @@ export const getSvg = () => {
       const path = `${start} ${rest}`;
       return `<path d="${path}" />`;
     })
-    .join(" ");
+    .join("\n    ");
 
   const width = (mostRight - mostLeft) / ZOOM;
   const height = (mostBottom - mostTop) / ZOOM;
 
-  return `
-<svg
+  return `<svg
   xmlns="http://www.w3.org/2000/svg"
   width="${width}"
   height="${height}"
