@@ -7,7 +7,7 @@ body {
   margin: 0;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #fff;
+  background-color: #ffffff;
 }
 
 code {
@@ -27,7 +27,7 @@ ul {
 }
 
 li {
-  color: #888;
+  color: #888888;
   margin-bottom: 12px;
 }
 
@@ -48,7 +48,7 @@ a {
 }
 
 a:visited {
-  color: #000;
+  color: #000000;
 }
 
 a:focus {

@@ -2,6 +2,9 @@ import { DEV, LINES_IN_BUFFER, ZOOM } from "./consts";
 import { Point } from "./vectors";
 import mesh, { Mesh } from "./mesh";
 
+// BUGS:
+// - Shapes that were undo-ed might be present in the exported SVG.
+
 let index = 0; // At which index the next line can be added.
 let history: number[] = [0];
 let historyIndex = 0;
