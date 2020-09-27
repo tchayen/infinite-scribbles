@@ -40,7 +40,7 @@ export const flush = () => {
     return;
   }
 
-  history = [...history.slice(0, historyIndex + 1), index];
+  history.push(index);
   historyIndex += 1;
 
   if (!DEV && !window.onbeforeunload) {
@@ -58,6 +58,16 @@ export const flush = () => {
 };
 
 export const append = (numbers: number[], a: Point, b: Point) => {
+  // User started drawing something new so we prevent redoing previous shapes.
+  if (historyIndex < history.length) {
+    history = [...history.slice(0, historyIndex + 1)];
+  }
+
+  // This is the first line in the shape so `a` should be preserved.
+  if (accumulatingShape.length === 0) {
+    accumulatingShape.push(a);
+  }
+
   // If user draws a new thing, reset all diverged history by dropping buffers.
   const current = Math.floor(index / LINES_IN_BUFFER);
   if (current < meshes.length) {

@@ -34,10 +34,6 @@ describe("meshes", () => {
     geometry.setup();
   });
 
-  it("is properly set up", () => {
-    // TODO
-  });
-
   it("increments index", () => {
     expect(geometry.__TEST_ONLY__.index).toBe(0);
     geometry.append(getLine(1), [1, 1], [2, 2]);
@@ -59,7 +55,7 @@ describe("meshes", () => {
   });
 
   describe("undo and redo", () => {
-    it("moves index to the previous value when undoing but leaving the next buffer", () => {
+    it("undo across buffers", () => {
       geometry.append(getLine(1), [30, 30], [3, 3]);
       geometry.append(getLine(2), [30, 30], [4, 4]);
       geometry.append(getLine(3), [30, 30], [5, 5]);
@@ -68,31 +64,52 @@ describe("meshes", () => {
       geometry.append(getLine(6), [30, 30], [8, 8]);
       geometry.flush();
 
-      console.log(
-        geometry.__TEST_ONLY__.history,
-        geometry.__TEST_ONLY__.historyIndex,
-        geometry.__TEST_ONLY__.index,
-        geometry.__TEST_ONLY__.meshes
-      );
-      // expect(geometry.__TEST_ONLY__.meshes[0].object.range).toBe(5);
+      expect(geometry.__TEST_ONLY__.meshes[0].object.range).toBe(5);
+
       geometry.undo();
-      console.log(
-        geometry.__TEST_ONLY__.history,
-        geometry.__TEST_ONLY__.historyIndex
-      );
-      // expect(geometry.__TEST_ONLY__.meshes[0].object.range).toBe(0);
-      geometry.redo();
-      console.log(
-        geometry.__TEST_ONLY__.history,
-        geometry.__TEST_ONLY__.historyIndex
-      );
+
+      expect(geometry.__TEST_ONLY__.meshes[0].object.range).toBe(0);
+      expect(geometry.__TEST_ONLY__.meshes[1].object.range).toBe(0);
     });
 
-    it("", () => {});
+    it("redo across buffers", () => {
+      geometry.append(getLine(1), [30, 30], [3, 3]);
+      geometry.append(getLine(2), [30, 30], [4, 4]);
+      geometry.append(getLine(3), [30, 30], [5, 5]);
+      geometry.append(getLine(4), [30, 30], [6, 6]);
+      geometry.append(getLine(5), [30, 30], [7, 7]);
+      geometry.append(getLine(6), [30, 30], [8, 8]);
+      geometry.flush();
+
+      geometry.undo();
+
+      geometry.redo();
+
+      expect(geometry.__TEST_ONLY__.meshes[0].object.range).toBe(5);
+      expect(geometry.__TEST_ONLY__.meshes[1].object.range).toBe(1);
+    });
 
     it("dereferences the next mesh if history starts to diverge", () => {
-      // TODO:
-      // - Check that length of buffers array decreases.
+      geometry.append(getLine(1), [30, 30], [3, 3]);
+      geometry.append(getLine(2), [30, 30], [4, 4]);
+      geometry.append(getLine(3), [30, 30], [5, 5]);
+      geometry.append(getLine(4), [30, 30], [6, 6]);
+      geometry.append(getLine(5), [30, 30], [7, 7]);
+      geometry.append(getLine(6), [30, 30], [8, 8]);
+      geometry.flush();
+      expect(geometry.__TEST_ONLY__.history).toStrictEqual([0, 6]);
+
+      geometry.undo();
+      expect(geometry.__TEST_ONLY__.history).toStrictEqual([0, 6]);
+
+      geometry.append(getLine(1), [10, 10], [20, 20]);
+      geometry.append(getLine(2), [20, 20], [30, 30]);
+
+      expect(geometry.__TEST_ONLY__.history).toStrictEqual([0]);
+
+      geometry.flush();
+
+      expect(geometry.__TEST_ONLY__.history).toStrictEqual([0, 2]);
     });
   });
 
