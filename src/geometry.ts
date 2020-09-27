@@ -3,8 +3,8 @@ import { Point } from "./vectors";
 import mesh, { Mesh } from "./mesh";
 
 let index = 0; // At which index the next line can be added.
-let history: number[] = [];
-let historyIndex = -1;
+let history: number[] = [0];
+let historyIndex = 0;
 let meshes: Mesh[] = [];
 let shapes: Point[][] = [];
 let accumulatingShape: Point[] = [];
@@ -18,7 +18,7 @@ export const undo = () => {
     for (let i = previous; i > current; i--) {
       mesh.update(meshes[i], 0);
     }
-    mesh.update(meshes[current], index);
+    mesh.update(meshes[current], index % LINES_IN_BUFFER);
   }
 };
 
@@ -29,13 +29,13 @@ export const redo = () => {
     index = history[historyIndex];
     const next = Math.floor(index / LINES_IN_BUFFER);
     for (let i = current; i < next; i++) {
-      mesh.update(meshes[i], LINES_IN_BUFFER - 1);
+      mesh.update(meshes[i], LINES_IN_BUFFER);
     }
-    mesh.update(meshes[next], index);
+    mesh.update(meshes[next], index % LINES_IN_BUFFER);
   }
 };
 
-export const mouseUp = () => {
+export const flush = () => {
   if (accumulatingShape.length === 0) {
     return;
   }
@@ -81,7 +81,7 @@ export const append = (numbers: number[], a: Point, b: Point) => {
 
 export const clear = () => {
   index = 0;
-  history = [];
+  history = [0];
   historyIndex = 0;
   meshes = [];
   shapes = [];
@@ -153,10 +153,18 @@ export const setup = () => {
 };
 
 export const __TEST_ONLY__ = {
-  meshes,
-  history,
-  shapes,
-  accumulatingShape,
+  get meshes() {
+    return meshes;
+  },
+  get history() {
+    return history;
+  },
+  get shapes() {
+    return shapes;
+  },
+  get accumulatingShape() {
+    return accumulatingShape;
+  },
   get index() {
     return index;
   },

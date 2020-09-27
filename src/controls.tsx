@@ -40,7 +40,7 @@ const handleMouseUp = () => {
   mousePosition = null;
 
   if (mode === "drawing") {
-    geometry.mouseUp();
+    geometry.flush();
   } else if (mode === "erasing") {
     // Remove erased shape.
   }
