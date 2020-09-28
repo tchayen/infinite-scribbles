@@ -6,8 +6,13 @@
 // - Handle going out of the canvas with cursor (or over the download button).
 
 // Nice to have:
-// - Custom cursors for pen and eraser and moving.
+// - Zooming.
+// + Custom cursors for pen and eraser and moving.
 // - A way to download a PNG.
+// - Colors.
+// - Cut and paste.
+// - Adding images via drag & drop.
+// - Shape insertion.
 // - If distance to previous point is huge, sample several points from a bezier curve.
 // - Ability to place point in place with no moving.
 
