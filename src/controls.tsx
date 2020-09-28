@@ -37,6 +37,15 @@ const handleKeyUp = (event: KeyboardEvent) => {
     mode = "drawing";
     mousePosition = null;
     document.body.style.cursor = DRAWING_CURSOR;
+  } else if (event.key === "e") {
+    mode = "erasing";
+    document.body.style.cursor = ERASER_CURSOR;
+  } else if (event.key === "d") {
+    mode = "drawing";
+    document.body.style.cursor = DRAWING_CURSOR;
+  } else if (event.key === "m") {
+    mode = "panning";
+    document.body.style.cursor = MOVING_CURSOR;
   }
 };
 

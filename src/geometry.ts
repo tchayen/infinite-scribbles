@@ -2,9 +2,6 @@ import { DEV, LINES_IN_BUFFER, ZOOM } from "./consts";
 import { Point } from "./vectors";
 import mesh, { Mesh } from "./mesh";
 
-// BUGS:
-// - Shapes that were undo-ed might be present in the exported SVG.
-
 let index = 0; // At which index the next line can be added.
 let history: number[] = [0];
 let historyIndex = 0;
@@ -99,6 +96,13 @@ export const clear = () => {
   meshes = [];
   shapes = [];
   accumulatingShape = [];
+};
+
+export const importSvg = (file: string) => {
+  // TODO:
+  // - Make regex for finding all path="..."
+  // - Translate SVG path to vertex information.
+  // - append(...) lines, flush(...) paths.
 };
 
 export const getSvg = () => {
