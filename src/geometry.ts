@@ -61,7 +61,7 @@ export const append = (numbers: number[], a: Point, b: Point) => {
   // User started drawing something new so we prevent redoing previous shapes.
   if (historyIndex < history.length) {
     history = [...history.slice(0, historyIndex + 1)];
-    shapes = [...shapes.slice(0, historyIndex + 1)];
+    shapes = [...shapes.slice(0, historyIndex)];
   }
 
   // This is the first line in the shape so `a` should be preserved.
@@ -107,6 +107,8 @@ export const importSvg = (file: string) => {
 
 export const getSvg = () => {
   // TODO: Add padding to exported image so lines that are touching borders are not cut.
+
+  shapes = [...shapes.slice(0, historyIndex)];
 
   let mostLeft = Infinity;
   let mostRight = -Infinity;

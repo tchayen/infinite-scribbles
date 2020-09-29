@@ -73,12 +73,12 @@ describe("meshes", () => {
     });
 
     it("redo across buffers", () => {
-      geometry.append(getLine(1), [30, 30], [3, 3]);
-      geometry.append(getLine(2), [30, 30], [4, 4]);
-      geometry.append(getLine(3), [30, 30], [5, 5]);
-      geometry.append(getLine(4), [30, 30], [6, 6]);
-      geometry.append(getLine(5), [30, 30], [7, 7]);
-      geometry.append(getLine(6), [30, 30], [8, 8]);
+      geometry.append(getLine(7), [30, 30], [3, 3]);
+      geometry.append(getLine(8), [30, 30], [4, 4]);
+      geometry.append(getLine(9), [30, 30], [5, 5]);
+      geometry.append(getLine(10), [30, 30], [6, 6]);
+      geometry.append(getLine(11), [30, 30], [7, 7]);
+      geometry.append(getLine(12), [30, 30], [8, 8]);
       geometry.flush();
 
       geometry.undo();
@@ -90,20 +90,20 @@ describe("meshes", () => {
     });
 
     it("dereferences the next mesh if history starts to diverge", () => {
-      geometry.append(getLine(1), [30, 30], [3, 3]);
-      geometry.append(getLine(2), [30, 30], [4, 4]);
-      geometry.append(getLine(3), [30, 30], [5, 5]);
-      geometry.append(getLine(4), [30, 30], [6, 6]);
-      geometry.append(getLine(5), [30, 30], [7, 7]);
-      geometry.append(getLine(6), [30, 30], [8, 8]);
+      geometry.append(getLine(13), [30, 30], [3, 3]);
+      geometry.append(getLine(14), [30, 30], [4, 4]);
+      geometry.append(getLine(15), [30, 30], [5, 5]);
+      geometry.append(getLine(16), [30, 30], [6, 6]);
+      geometry.append(getLine(17), [30, 30], [7, 7]);
+      geometry.append(getLine(18), [30, 30], [8, 8]);
       geometry.flush();
       expect(geometry.__TEST_ONLY__.history).toStrictEqual([0, 6]);
 
       geometry.undo();
       expect(geometry.__TEST_ONLY__.history).toStrictEqual([0, 6]);
 
-      geometry.append(getLine(1), [10, 10], [20, 20]);
-      geometry.append(getLine(2), [20, 20], [30, 30]);
+      geometry.append(getLine(19), [10, 10], [20, 20]);
+      geometry.append(getLine(20), [20, 20], [30, 30]);
 
       expect(geometry.__TEST_ONLY__.history).toStrictEqual([0]);
 
@@ -115,6 +115,9 @@ describe("meshes", () => {
 
   describe("exported shape", () => {
     beforeEach(() => {
+      geometry.clear();
+      geometry.setup();
+
       geometry.append(getLine(1), [0, 0], [10, 10]);
       geometry.append(getLine(2), [10, 10], [10, 100]);
       geometry.append(getLine(3), [10, 100], [100, 100]);
@@ -151,29 +154,11 @@ describe("meshes", () => {
     });
 
     it("undoed shapes don't end up there", () => {
-      geometry.append(getLine(1), [0, 0], [10, 10]);
-      geometry.append(getLine(2), [10, 10], [10, 100]);
-      geometry.append(getLine(3), [10, 100], [100, 100]);
-      geometry.append(getLine(3), [100, 100], [100, 10]);
-      geometry.append(getLine(4), [100, 10], [10, 10]);
-      geometry.flush();
-
-      geometry.append(getLine(5), [0, 0], [110, 0]);
-      geometry.append(getLine(5), [110, 0], [100, 10]);
-      geometry.flush();
-
       geometry.undo();
 
-      expect(geometry.__TEST_ONLY__.shapes).toStrictEqual([
-        [
-          [0, 0],
-          [10, 10],
-          [10, 100],
-          [100, 100],
-          [100, 10],
-          [10, 10],
-        ],
-      ]);
+      expect(geometry.getSvg()).toEqual(
+        `<svg\n  xmlns="http://www.w3.org/2000/svg"\n  width="50"\n  height="50"\n  fill="transparent"\n  stroke="black"\n  stroke-width="2">\n    <path d="M 0 0 L 5 5 L 5 50 L 50 50 L 50 5 L 5 5" />\n</svg>`
+      );
     });
 
     it("undoed but redoed shapes end up there", () => {
