@@ -6,7 +6,7 @@ import {
 import { DEV, LINES_IN_BUFFER, LINE_WIDTH, ZOOM } from "./consts";
 import { getLine, Point } from "./vectors";
 import mesh, { Mesh } from "./mesh";
-import { renderer } from "./three";
+import { registerEvent, renderer } from "./three";
 
 let index = 0; // At which index the next line can be added.
 let history: number[] = [0];
@@ -216,7 +216,7 @@ export const getSvg = () => {
 export const setup = () => {
   meshes.push({ object: mesh.create() });
 
-  renderer.domElement.ondrop = (event) => {
+  registerEvent((event) => {
     event.preventDefault();
 
     if (event.dataTransfer === null) {
@@ -234,11 +234,7 @@ export const setup = () => {
         importSvg(file);
       }
     }
-  };
-
-  renderer.domElement.ondragover = (event) => {
-    event.preventDefault();
-  };
+  });
 };
 
 export const __TEST_ONLY__ = {

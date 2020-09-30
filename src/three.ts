@@ -37,4 +37,11 @@ export const setup = () => {
   camera.position.set(0, 0, 1);
 };
 
+export const registerEvent = (callback: (event: DragEvent) => void) => {
+  renderer.domElement.ondrop = callback;
+  renderer.domElement.ondragover = (event) => {
+    event.preventDefault();
+  };
+};
+
 export const material = new THREE.MeshBasicMaterial({ color: 0x000000 });

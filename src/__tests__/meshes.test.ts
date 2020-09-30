@@ -1,5 +1,6 @@
 import * as geometry from "../geometry";
 jest.mock("../consts");
+jest.mock("../three");
 jest.mock("../mesh");
 
 const line = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1];
@@ -163,6 +164,18 @@ describe("meshes", () => {
 
     it("undoed but redoed shapes end up there", () => {
       // TODO
+    });
+  });
+
+  describe("import", () => {
+    it("uhh works ??", () => {
+      const svg = `<svg\n  xmlns="http://www.w3.org/2000/svg"\n  width="55"\n  height="50"\n  fill="transparent"\n  stroke="black"\n  stroke-width="2">\n    <path d="M 0 0 L 5 5 L 5 50 L 50 50 L 50 5 L 5 5" />\n    <path d="M 0 0 L 55 0 L 50 5" />\n</svg>`;
+      const file = new File([svg], "tmp", { type: "text/plain" });
+
+      console.log(geometry.__TEST_ONLY__.shapes);
+      geometry.importSvg(file);
+
+      console.log(geometry.__TEST_ONLY__.shapes);
     });
   });
 });
