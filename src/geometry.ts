@@ -1,6 +1,12 @@
-import { DEV, LINES_IN_BUFFER, ZOOM } from "./consts";
-import { Point } from "./vectors";
+import {
+  LineToCommand,
+  MoveToCommand,
+  parseSVG as parsePath,
+} from "svg-path-parser";
+import { DEV, LINES_IN_BUFFER, LINE_WIDTH, ZOOM } from "./consts";
+import { getLine, Point } from "./vectors";
 import mesh, { Mesh } from "./mesh";
+import { renderer } from "./three";
 
 let index = 0; // At which index the next line can be added.
 let history: number[] = [0];
@@ -98,11 +104,54 @@ export const clear = () => {
   accumulatingShape = [];
 };
 
-export const importSvg = (file: string) => {
-  // TODO:
-  // - Make regex for finding all path="..."
-  // - Translate SVG path to vertex information.
-  // - append(...) lines, flush(...) paths.
+export const importSvg = async (file: File) => {
+  const text = await file.text();
+
+  console.log({ text });
+
+  const paths = [...text.matchAll(/(?<=d=")[ML\d ]+(?=")/g)].map(
+    (matches) => matches[0]
+  );
+  console.log({ paths });
+  const instructions = paths.map((path) => parsePath(path));
+  console.log({ instructions });
+
+  let previous: Point | null = null;
+
+  const shapes: Point[][] = [];
+
+  for (const set of instructions) {
+    for (const c of set) {
+      const command = c as MoveToCommand | LineToCommand;
+
+      if ("x" in command) {
+        if (command.code === "M") {
+          previous = [command.x, command.y];
+          shapes.push([]);
+        } else if (command.code === "L") {
+          if (previous === null) {
+            throw new Error("Start point is missing");
+          }
+
+          const a = previous;
+          const b: Point = [command.x, command.y];
+          shapes[shapes.length - 1].push(a, b);
+        }
+      }
+    }
+  }
+  console.log({ shapes });
+
+  for (const shape of shapes) {
+    for (let i = 1; i < shapes.length; i++) {
+      const a = shape[i - 1];
+      const b = shape[i];
+
+      console.log(getLine(a, b, LINE_WIDTH), a, b);
+      append(getLine(a, b, LINE_WIDTH), a, b);
+    }
+    flush();
+  }
 };
 
 export const getSvg = () => {
@@ -166,6 +215,30 @@ export const getSvg = () => {
 
 export const setup = () => {
   meshes.push({ object: mesh.create() });
+
+  renderer.domElement.ondrop = (event) => {
+    event.preventDefault();
+
+    if (event.dataTransfer === null) {
+      return;
+    }
+
+    if (event.dataTransfer.items) {
+      for (let i = 0; i < event.dataTransfer.items.length; i++) {
+        const file = event.dataTransfer.files[i];
+        importSvg(file);
+      }
+    } else {
+      for (let i = 0; i < event.dataTransfer.files.length; i++) {
+        const file = event.dataTransfer.files[i];
+        importSvg(file);
+      }
+    }
+  };
+
+  renderer.domElement.ondragover = (event) => {
+    event.preventDefault();
+  };
 };
 
 export const __TEST_ONLY__ = {

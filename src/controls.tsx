@@ -1,7 +1,7 @@
 import { renderer, render, camera } from "./three";
 import { getLine, Point } from "./vectors";
 import * as geometry from "./geometry";
-import { ZOOM } from "./consts";
+import { LINE_WIDTH, ZOOM } from "./consts";
 
 const DRAWING_CURSOR = `url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABkAAAAZCAYAAADE6YVjAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAACpSURBVHgB7dWxDcMgEIXhk7IAI9wojMAG8Shskhslm9CmSzYg95CRSGRRmKOx+KUny819hQvfyDav23Qf3YsmdGfmHGPMeOKdjCtASikjPK2hH6CGd+ccIE+DHQK1EAKQQAN1AREBkHRMJ1vAAhZwBSDMBmg/UI7NAjyAuhayApC0SIUsAf4HmpkASA6Ov3UPKwCVD94cjzpHhm378ScN/ip7MRn87Ht9AXj58RlNV55UAAAAAElFTkSuQmCC") -1 22, auto`;
 const MOVING_CURSOR = `url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAARCAYAAAA7bUf6AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAD3SURBVHgBrVTBEYIwELxRCqCE+PMJFUAH8PRJCZSQUuxAOwhUEjqAp794m0kYBCOi7MzCcXB7e5mEIy0RMy8uPjMr5uDihPlwzx+hy7I0QghLKeUYI4/3rtEC6NCD+BBAMTiPnZAXQx1FTMG8KaXitm3XXFKSJJZFUYg0TRWnTge+5Kwu8jynLYBQVVUYq7ROkJgjy7LVmNfJ3qJQp6mzUOxxoB3w4mRq9WeRrYvrscs4EOkY9A8gcmfQMKwehwVczVio/LbeApwnclsfEMyeHX0tgKaYYu4Oirqua6O1DhY3TWN4u/sDKN6NieTVfWAC7JiSJr+DJ0a04vAJkY+mAAAAAElFTkSuQmCC') 0 0, auto`;
@@ -111,7 +111,7 @@ const handleMouseMove = (event: MouseEvent) => {
         return;
       }
 
-      const line = getLine(previous, current, 4);
+      const line = getLine(previous, current, LINE_WIDTH);
       previous = current;
       geometry.append(line, previous, current);
       render();
