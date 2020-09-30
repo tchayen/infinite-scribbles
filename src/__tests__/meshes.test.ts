@@ -168,14 +168,12 @@ describe("meshes", () => {
   });
 
   describe("import", () => {
-    it("uhh works ??", () => {
+    it("works", () => {
       const svg = `<svg\n  xmlns="http://www.w3.org/2000/svg"\n  width="55"\n  height="50"\n  fill="transparent"\n  stroke="black"\n  stroke-width="2">\n    <path d="M 0 0 L 5 5 L 5 50 L 50 50 L 50 5 L 5 5" />\n    <path d="M 0 0 L 55 0 L 50 5" />\n</svg>`;
-      const file = new File([svg], "tmp", { type: "text/plain" });
+      geometry.importSvg(svg);
 
-      console.log(geometry.__TEST_ONLY__.shapes);
-      geometry.importSvg(file);
-
-      console.log(geometry.__TEST_ONLY__.shapes);
+      expect(geometry.__TEST_ONLY__.shapes).toHaveLength(2);
+      expect(geometry.__TEST_ONLY__.meshes[0].object.points[0]).not.toBeNaN();
     });
   });
 });

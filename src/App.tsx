@@ -1,7 +1,7 @@
 // TODO:
 
 // Important:
-// - Import from exported SVG.
+// + Import from exported SVG.
 // - Eraser.
 // - Handle going out of the canvas with cursor (or over the download button).
 

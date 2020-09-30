@@ -39,6 +39,7 @@ export const add = (p1: Point, p2: Point): Point => [
 
 export const getLine = (a: Point, b: Point, width: number) => {
   width /= 2;
+
   const dx = b[0] - a[0];
   const dy = b[1] - a[1];
   const n1 = scale([dy, -dx], width);

@@ -6,7 +6,7 @@ import {
 import { DEV, LINES_IN_BUFFER, LINE_WIDTH, ZOOM } from "./consts";
 import { getLine, Point } from "./vectors";
 import mesh, { Mesh } from "./mesh";
-import { registerEvent, renderer } from "./three";
+import { registerEvent, render } from "./three";
 
 let index = 0; // At which index the next line can be added.
 let history: number[] = [0];
@@ -104,17 +104,19 @@ export const clear = () => {
   accumulatingShape = [];
 };
 
-export const importSvg = async (file: File) => {
-  const text = await file.text();
+const readFile = async (file: File) => {
+  try {
+    return await file.text();
+  } catch (error) {
+    throw new Error(`Could not read file: '${error.message}'.`);
+  }
+};
 
-  console.log({ text });
-
-  const paths = [...text.matchAll(/(?<=d=")[ML\d ]+(?=")/g)].map(
+export const importSvg = async (file: string) => {
+  const paths = [...file.matchAll(/(?<=d=")[ML\d ]+(?=")/g)].map(
     (matches) => matches[0]
   );
-  console.log({ paths });
   const instructions = paths.map((path) => parsePath(path));
-  console.log({ instructions });
 
   let previous: Point | null = null;
 
@@ -124,34 +126,36 @@ export const importSvg = async (file: File) => {
     for (const c of set) {
       const command = c as MoveToCommand | LineToCommand;
 
-      if ("x" in command) {
-        if (command.code === "M") {
-          previous = [command.x, command.y];
-          shapes.push([]);
-        } else if (command.code === "L") {
-          if (previous === null) {
-            throw new Error("Start point is missing");
-          }
-
-          const a = previous;
-          const b: Point = [command.x, command.y];
-          shapes[shapes.length - 1].push(a, b);
+      if (command.code === "M") {
+        previous = [command.x * ZOOM, command.y * ZOOM];
+        shapes.push([]);
+      } else if (command.code === "L") {
+        if (previous === null) {
+          throw new Error("Start point is missing");
         }
+
+        const a = previous;
+        const b: Point = [command.x * ZOOM, command.y * ZOOM];
+        shapes[shapes.length - 1].push(a, b);
+        previous = b;
       }
     }
   }
-  console.log({ shapes });
 
   for (const shape of shapes) {
-    for (let i = 1; i < shapes.length; i++) {
+    for (let i = 1; i < shape.length; i++) {
       const a = shape[i - 1];
       const b = shape[i];
 
-      console.log(getLine(a, b, LINE_WIDTH), a, b);
+      if (b === undefined) {
+        debugger;
+      }
+
       append(getLine(a, b, LINE_WIDTH), a, b);
     }
     flush();
   }
+  render();
 };
 
 export const getSvg = () => {
@@ -226,12 +230,12 @@ export const setup = () => {
     if (event.dataTransfer.items) {
       for (let i = 0; i < event.dataTransfer.items.length; i++) {
         const file = event.dataTransfer.files[i];
-        importSvg(file);
+        readFile(file).then((file) => importSvg(file));
       }
     } else {
       for (let i = 0; i < event.dataTransfer.files.length; i++) {
         const file = event.dataTransfer.files[i];
-        importSvg(file);
+        readFile(file).then((file) => importSvg(file));
       }
     }
   });
