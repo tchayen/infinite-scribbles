@@ -92,6 +92,7 @@ export const append = (numbers: number[], a: Point, b: Point) => {
   }
 
   mesh.update(meshes[current], (index % LINES_IN_BUFFER) + 1);
+
   index += 1;
 };
 

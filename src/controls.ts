@@ -3,13 +3,9 @@ import { getLine, Point } from "./vectors";
 import * as geometry from "./geometry";
 import { LINE_WIDTH, ZOOM } from "./consts";
 
-const DRAWING_CURSOR = `url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABkAAAAZCAYAAADE6YVjAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAACpSURBVHgB7dWxDcMgEIXhk7IAI9wojMAG8Shskhslm9CmSzYg95CRSGRRmKOx+KUny819hQvfyDav23Qf3YsmdGfmHGPMeOKdjCtASikjPK2hH6CGd+ccIE+DHQK1EAKQQAN1AREBkHRMJ1vAAhZwBSDMBmg/UI7NAjyAuhayApC0SIUsAf4HmpkASA6Ov3UPKwCVD94cjzpHhm378ScN/ip7MRn87Ht9AXj58RlNV55UAAAAAElFTkSuQmCC") -1 22, auto`;
-const MOVING_CURSOR = `url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAARCAYAAAA7bUf6AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAD3SURBVHgBrVTBEYIwELxRCqCE+PMJFUAH8PRJCZSQUuxAOwhUEjqAp794m0kYBCOi7MzCcXB7e5mEIy0RMy8uPjMr5uDihPlwzx+hy7I0QghLKeUYI4/3rtEC6NCD+BBAMTiPnZAXQx1FTMG8KaXitm3XXFKSJJZFUYg0TRWnTge+5Kwu8jynLYBQVVUYq7ROkJgjy7LVmNfJ3qJQp6mzUOxxoB3w4mRq9WeRrYvrscs4EOkY9A8gcmfQMKwehwVczVio/LbeApwnclsfEMyeHX0tgKaYYu4Oirqua6O1DhY3TWN4u/sDKN6NieTVfWAC7JiSJr+DJ0a04vAJkY+mAAAAAElFTkSuQmCC') 0 0, auto`;
-const ERASER_CURSOR = `url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAC1SURBVHgBtc1RDcMwDEXRSCOQMgiEQCiEQRiEMFgYBkLGIGOQOVI75aP17FfvSf70uTeHb6V70L3o3s54T7q+XaOLznAzbh45ws0iHH45IsHhiAZXRxB8jngWDyF07z0aGLeyeK21l1LQSP2J7wMiAw8iHIjocUUExwWRU/wuxZnIKT6WU0pduynC4mNxWZY2HjTLOYtwKKLFVREUF0Wu4mzECj+MWOPfCF2LMf4F3xe2kHfgPi+sN3A9WiV4AAAAAElFTkSuQmCC') 0 0, auto`;
+document.body.style.cursor = "default";
 
-document.body.style.cursor = DRAWING_CURSOR;
-
-type Mode = "drawing" | "erasing" | "panning";
+type Mode = "drawing" | "panning";
 let mode: Mode = "drawing";
 
 let penDown = false;
@@ -21,7 +17,7 @@ let offset: { x: number; y: number } = { x: 0, y: 0 };
 const handleKeyDown = (event: KeyboardEvent) => {
   if (event.key === " ") {
     mode = "panning";
-    document.body.style.cursor = MOVING_CURSOR;
+    document.body.style.cursor = "grabbing";
   } else if (event.key === "z" && (event.ctrlKey || event.metaKey)) {
     if (event.shiftKey) {
       geometry.redo();
@@ -36,16 +32,13 @@ const handleKeyUp = (event: KeyboardEvent) => {
   if (event.key === " ") {
     mode = "drawing";
     mousePosition = null;
-    document.body.style.cursor = DRAWING_CURSOR;
-  } else if (event.key === "e") {
-    mode = "erasing";
-    document.body.style.cursor = ERASER_CURSOR;
+    document.body.style.cursor = "default";
   } else if (event.key === "d") {
     mode = "drawing";
-    document.body.style.cursor = DRAWING_CURSOR;
+    document.body.style.cursor = "default";
   } else if (event.key === "m") {
     mode = "panning";
-    document.body.style.cursor = MOVING_CURSOR;
+    document.body.style.cursor = "grab";
   }
 };
 
@@ -56,8 +49,8 @@ const handleMouseUp = () => {
 
   if (mode === "drawing") {
     geometry.flush();
-  } else if (mode === "erasing") {
-    // Remove erased shape.
+  } else if (mode === "panning") {
+    document.body.style.cursor = "grab";
   }
 };
 
@@ -65,6 +58,7 @@ const handleMouseDown = (event: MouseEvent) => {
   penDown = true;
 
   if (mode === "panning") {
+    document.body.style.cursor = "grabbing";
     mousePosition = { x: event.offsetX, y: event.offsetY };
   }
 };
@@ -117,14 +111,14 @@ const handleMouseMove = (event: MouseEvent) => {
       render();
     }
   } else if (mode === "erasing") {
-    // TODO erasing:
-    // - Find edges that were crossed.
-    // - Copy them to a separate pink material buffer.
-    // - Zero them in original places.
-    // - When mouse goes up, clear the pink buffer.
-    //
-    // Future:
-    // - Detect emmpty buffers and get rid of them.
+    // const x = (event.offsetX + offset.x) * ZOOM;
+    // const y = (event.offsetY + offset.y) * ZOOM;
+    // if (previous === null) {
+    //   previous = [x, y];
+    // } else {
+    //   const current: Point = [x, y];
+    //   geometry.erase(previous, current);
+    // }
   }
 };
 

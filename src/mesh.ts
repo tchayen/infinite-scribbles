@@ -5,13 +5,13 @@ import {
   TRIANGLES_IN_LINE,
   VALUES_IN_POINT,
 } from "./consts";
-import { material, scene } from "./three";
+import { material as defaultMaterial, scene } from "./three";
 
 export type Mesh = {
   object: THREE.Mesh<THREE.BufferGeometry>;
 };
 
-const create = () => {
+const create = (material = defaultMaterial) => {
   const positions = new Float32Array(
     LINES_IN_BUFFER * TRIANGLES_IN_LINE * POINTS_IN_TRIANGLE * VALUES_IN_POINT
   );
