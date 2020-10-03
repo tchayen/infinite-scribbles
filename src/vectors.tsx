@@ -60,3 +60,18 @@ export const getLine = (a: Point, b: Point, width: number) => {
     0,
   ];
 };
+
+// https://stackoverflow.com/a/24392281
+export const lineIntersection = (a: Point, b: Point, c: Point, d: Point) => {
+  let det, gamma, lambda;
+  det = (b[0] - a[0]) * (d[1] - c[1]) - (d[0] - c[0]) * (b[1] - a[1]);
+  if (det === 0) {
+    return false;
+  } else {
+    lambda =
+      ((d[1] - c[1]) * (d[0] - a[0]) + (c[0] - d[0]) * (d[1] - a[1])) / det;
+    gamma =
+      ((a[1] - b[1]) * (d[0] - a[0]) + (b[0] - a[0]) * (d[1] - a[1])) / det;
+    return 0 < lambda && lambda < 1 && 0 < gamma && gamma < 1;
+  }
+};
