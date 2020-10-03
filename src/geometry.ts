@@ -147,10 +147,6 @@ export const importSvg = async (file: string) => {
       const a = shape[i - 1];
       const b = shape[i];
 
-      if (b === undefined) {
-        debugger;
-      }
-
       append(getLine(a, b, LINE_WIDTH), a, b);
     }
     flush();
